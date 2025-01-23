@@ -141,7 +141,7 @@ export default function Home() {
             >
               <div>
                 <span className="font-semibold">{cls.name}: </span>
-                <span>{cls.capacity}</span>
+                <span>({cls.capacity})</span>
               </div>
               <Button
                 variant="destructive"
@@ -160,14 +160,20 @@ export default function Home() {
         <Input
           type="text"
           value={newClassName}
-          onChange={(e) => setNewClassName(e.target.value)}
+          onChange={(e) => {
+            setNewClassName(e.target.value);
+            setRepartitionedFile(null);
+          }}
           placeholder="Locale"
           className="w-1/2"
         />
         <Input
           type="number"
           value={newClassCapacity}
-          onChange={(e) => setNewClassCapacity(e.target.value)}
+          onChange={(e) => {
+            setNewClassCapacity(e.target.value);
+            setRepartitionedFile(null);
+          }}
           placeholder="Capacité"
           className="w-1/2"
         />
