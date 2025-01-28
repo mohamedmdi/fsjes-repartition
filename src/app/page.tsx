@@ -1,10 +1,8 @@
 "use client";
 
-import { AnimatedSubscribeButton } from "@/components/ui/animated-subscribe-button";
 import { AuroraText } from "@/components/ui/aurora-text";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { CheckIcon, DownloadIcon } from "lucide-react";
 import { useState } from "react";
 import * as XLSX from "xlsx";
 import { jsPDF } from "jspdf";
@@ -59,7 +57,9 @@ export default function Home() {
         type: "array",
       });
       const sheet = wb.Sheets[wb.SheetNames[0]];
-      const jsonData: Row[] = XLSX.utils.sheet_to_json<Row>(sheet, { defval: "" });
+      const jsonData: Row[] = XLSX.utils.sheet_to_json<Row>(sheet, {
+        defval: "",
+      });
       let rows = [...jsonData];
 
       let classIndex = 0;
@@ -99,7 +99,9 @@ export default function Home() {
         return {
           "N°": sequenceNumber++,
           ...row,
-          "Locale": currentClass?.name + "(" + currentClass?.capacity + ")" || "No Class",
+          Locale:
+            currentClass?.name + "(" + currentClass?.capacity + ")" ||
+            "No Class",
         };
       });
 
@@ -114,15 +116,15 @@ export default function Home() {
       });
 
       // Reset sequence numbers within each group
-      Object.keys(groupedRows).forEach(salle => {
+      Object.keys(groupedRows).forEach((salle) => {
         groupedRows[salle] = groupedRows[salle].map((row, index) => ({
           ...row,
-          "N°": index + 1
+          "N°": index + 1,
         }));
       });
 
       const zip = new JSZip();
-      
+
       const originalFolder = zip.folder("original");
       const modifiedFolder = zip.folder("modified");
       const pdfsFolder = zip.folder("pdfs");
@@ -135,7 +137,7 @@ export default function Home() {
           orientation: "landscape",
           format: "a4",
         }) as ExtendedJsPDF;
-        
+
         const headers = Object.keys(groupedRows[salle][0]);
 
         doc.text(`Salle: ${salle}`, 10, 10);
