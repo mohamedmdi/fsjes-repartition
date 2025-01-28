@@ -1,14 +1,27 @@
 "use client";
 
+import { AnimatedSubscribeButton } from "@/components/ui/animated-subscribe-button";
 import { AuroraText } from "@/components/ui/aurora-text";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { CheckIcon, DownloadIcon } from "lucide-react";
 import { useState } from "react";
 import * as XLSX from "xlsx";
 import { jsPDF } from "jspdf";
 import "jspdf-autotable";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
+
+// Add type definitions for jsPDF with autoTable
+interface AutoTableOptions {
+  head: Array<Array<string | number>>;
+  body: Array<Array<string | number>>;
+  startY: number;
+}
+
+interface ExtendedJsPDF extends jsPDF {
+  autoTable: (options: AutoTableOptions) => void;
+}
 
 interface Row {
   [key: string]: string | number;
@@ -46,16 +59,14 @@ export default function Home() {
         type: "array",
       });
       const sheet = wb.Sheets[wb.SheetNames[0]];
-      const jsonData: Row[] = XLSX.utils.sheet_to_json<Row>(sheet, {
-        defval: "",
-      });
+      const jsonData: Row[] = XLSX.utils.sheet_to_json<Row>(sheet, { defval: "" });
       let rows = [...jsonData];
 
       let classIndex = 0;
       let currentClass = classes[classIndex];
       let rowIndex = 1;
       let currentGroup: string | null = null;
-      let sequenceNumber = 1; // Initialize sequence number
+      let sequenceNumber = 1;
 
       // Process the data
       rows = rows.map((row) => {
@@ -66,7 +77,7 @@ export default function Home() {
           if (classIndex < classes.length) {
             currentClass = classes[classIndex];
             rowIndex = 1;
-            sequenceNumber = 1; // Reset sequence number for new class
+            sequenceNumber = 1;
           } else {
             return { ...row, "N°": sequenceNumber++ };
           }
@@ -77,7 +88,7 @@ export default function Home() {
           if (classIndex < classes.length) {
             currentClass = classes[classIndex];
             rowIndex = 1;
-            sequenceNumber = 1; // Reset sequence number for new class
+            sequenceNumber = 1;
           } else {
             return { ...row, "N°": sequenceNumber++ };
           }
@@ -86,18 +97,16 @@ export default function Home() {
         currentGroup = group;
         rowIndex++;
         return {
-          "N°": sequenceNumber++, // Add sequence number as first column
+          "N°": sequenceNumber++,
           ...row,
-          Local:
-            currentClass?.name + "(" + currentClass?.capacity + ")" ||
-            "No Class",
+          "Locale": currentClass?.name + "(" + currentClass?.capacity + ")" || "No Class",
         };
       });
 
       // Group rows by classroom
       const groupedRows: { [key: string]: Row[] } = {};
       rows.forEach((row) => {
-        const salle = row["Local"] as string;
+        const salle = row["Locale"] as string;
         if (!groupedRows[salle]) {
           groupedRows[salle] = [];
         }
@@ -105,23 +114,19 @@ export default function Home() {
       });
 
       // Reset sequence numbers within each group
-      Object.keys(groupedRows).forEach((salle) => {
+      Object.keys(groupedRows).forEach(salle => {
         groupedRows[salle] = groupedRows[salle].map((row, index) => ({
           ...row,
-          "N°": index + 1,
+          "N°": index + 1
         }));
       });
 
       const zip = new JSZip();
-
-      // Create a folder for original files
+      
       const originalFolder = zip.folder("original");
-      // Create a folder for modified files
       const modifiedFolder = zip.folder("modified");
-      // Create a folder for PDFs
       const pdfsFolder = zip.folder("pdfs");
 
-      // Add original Excel file
       originalFolder?.file(file.name, file);
 
       // Generate PDFs for each classroom
@@ -129,8 +134,9 @@ export default function Home() {
         const doc = new jsPDF({
           orientation: "landscape",
           format: "a4",
-        });
-        const headers = Object.keys(groupedRows[salle][0]); // Use first row to get headers
+        }) as ExtendedJsPDF;
+        
+        const headers = Object.keys(groupedRows[salle][0]);
 
         doc.text(`Salle: ${salle}`, 10, 10);
 
@@ -138,7 +144,7 @@ export default function Home() {
           headers.map((header) => row[header])
         );
 
-        (doc as any).autoTable({
+        doc.autoTable({
           head: [headers],
           body: data,
           startY: 20,
@@ -229,7 +235,7 @@ export default function Home() {
           type="text"
           value={newClassName}
           onChange={(e) => setNewClassName(e.target.value)}
-          placeholder="Local"
+          placeholder="Locale"
           className="w-1/2"
         />
         <Input
@@ -239,7 +245,7 @@ export default function Home() {
           placeholder="Capacité"
           className="w-1/2"
         />
-        <Button onClick={handleAddClass}>Ajouter Local</Button>
+        <Button onClick={handleAddClass}>Ajouter Locale</Button>
       </div>
 
       <div className="flex flex-col justify-between gap-1 mb-6">
