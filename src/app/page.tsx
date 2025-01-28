@@ -1,6 +1,5 @@
 "use client";
 
-import { AnimatedSubscribeButton } from "@/components/ui/animated-subscribe-button";
 import { AuroraText } from "@/components/ui/aurora-text";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
